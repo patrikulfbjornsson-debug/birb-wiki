@@ -67,22 +67,59 @@ Fly → Gather (food/materials) → Return to Nest → Build/Upgrade
 
 ## Bird Attributes & Traits
 
-Birds have **physical traits** rated in stars (1–5). Rather than abstract stats like "Speed", traits describe the bird's body and naturally affect underlying systems.
+Birds have **physical traits** that describe their body parts. Each part has sub-stats that contribute positively or negatively to gameplay stats. Rather than abstract values like "Speed", the system is grounded in the bird's actual anatomy.
 
-### Core Physical Traits
+### Physical Body Parts & Sub-Stats
 
-| Trait | Affects |
-|-------|---------|
-| **Wings** | Flight speed, stamina, maneuverability, glide distance |
-| **Beak** | Gather speed, gather range, damage to small enemies, food efficiency |
-| **Talons** | Grip strength, combat damage, ability to carry heavy items |
-| **Eyes** | Detection range, predator awareness, finding rare resources |
-| **Feathers** | Stealth (noise level), cold resistance, camouflage |
-| **Crop** | Carry capacity for food and materials |
-| **Lungs** | Stamina pool, duration of sustained flight |
-| **Neck** | Reach range, drinking from deep water sources |
-| **Tail** | Agility, tight maneuvering through trees and undergrowth |
-| **Bones** | Weight vs durability — lighter = faster, heavier = more HP |
+| Body Part | Sub-Stats |
+|-----------|-----------|
+| **Beak** | Length, Strength |
+| **Claw** | Length, Strength |
+| **Feather** | Thickness |
+| **Wing Muscles** | Length, Vibrancy, Color Adaptation, Strength, Agility, Endurance |
+| **Tail** | Length, Width |
+| **Eyes** | Wide Sight, Sharpness |
+| **Intelligence** | Problem Solving, Spatial Awareness, Social Awareness, Imitation |
+| **Voice** | Strength, Gular Fluttering |
+
+### How Stats Are Calculated
+
+Each body part sub-stat contributes a modifier (positive or negative) to the bird's core stats:
+
+| Core Stat | Influenced By |
+|-----------|--------------|
+| **Health** | Beak Length (+1), Claw Length (+2) |
+| **Armor** | Beak Strength (+3), Claw Strength (+3) |
+| **Stamina** | Feather Thickness (−1), Wing Length (+1), Wing Vibrancy (+2), Wing Strength (+3) |
+| **Speed** | Wing Agility (+1) |
+| **Turning Speed** | Wing Endurance (−1) |
+| **Climb Speed** | Tail Length (−1) |
+| **Energy Drain** | Tail Width (−1), Eyes Wide Sight (+1) |
+| **Food Drain** | Eyes Sharpness (+1) |
+| **Attack Damage (Beak)** | Beak Length (+1), Beak Strength (+3) |
+| **Attack Damage (Talon)** | Claw Length (+1), Claw Strength (+3) |
+| **Reach (Beak)** | Beak Strength (+3) |
+| **Reach (Talon)** | Claw Strength (+3), Claw Length (+1) |
+| **Carry Food** | Wing Strength (+3), Wing Agility (+1), Tail Length (+3), Tail Width (+1) |
+| **Carry Material** | Wing Agility (+1), Wing Endurance (+3), Tail Width (+1), Eyes Wide Sight (+3) |
+| **Stealth (Hiding)** | Feather Thickness (−1), Wing Color Adaptation (+1) |
+| **Stealth (Flight)** | Feather Thickness (−1), Wing Vibrancy (+1), Wing Agility (−1) |
+| **Problem Solving** | Intelligence PS (+2), Intelligence Spatial (+2), Intelligence Imitation (+1) |
+| **Charisma** | Voice Strength (+2), Gular Fluttering (+1) |
+| **Voice Strength** | Voice Strength (+2) |
+| **Regeneration (HP)** | Wing Vibrancy (+2) |
+| **Regeneration (Stamina)** | Wing Endurance (−1) |
+
+### Environmental Modifiers
+
+Performance is also affected by weather and environment:
+
+| Condition | Effect |
+|-----------|--------|
+| **Dark** | Eyes Wide Sight (+1), Eyes Sharpness (+1) |
+| **Cold** | Feather Thickness (−1), Wing Color Adaptation (+1) |
+| **Heat** | Wing Agility (+1), Wing Color Adaptation (−1) |
+| **Wind** | Wing Endurance (−1) |
 
 ### Behavioural Traits
 
