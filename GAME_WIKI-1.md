@@ -21,6 +21,7 @@
 9. [Enemies & Predators](#enemies--predators)
 10. [Multiplayer](#multiplayer)
 11. [Development Roadmap](#development-roadmap)
+12. [Current Scripts Reference](#current-scripts-reference)
 
 ---
 
