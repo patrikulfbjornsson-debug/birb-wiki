@@ -333,19 +333,45 @@ Builds the HUD Canvas at runtime — no prefab needed. Attach to any GameObject;
 
 ---
 
+### `EnvironmentController.cs`
+Single controller for all environment visual effects. Attach to any GameObject; assign bird, PostProcessVolume, and RainScript references.
+- **Two state dropdowns:** `currentWeather` (Clear, Rain, Thunderstorm, Foggy, Hot, Cold, Wind) and `currentTimeOfDay` (Day, Evening, Night, Morning)
+- **`timeOfDayWeight`** (0–1 slider): blends time-of-day effects into weather. 0 = pure weather, 1 = pure time of day.
+- **Three blend layers** (applied in order, single write per frame):
+  1. Weather preset values
+  2. Time of day lerped in by `timeOfDayWeight`
+  3. Hawk zone (Zone1 = tracking, Zone2 = diving) blended on top via `SetHawkZone(0/1/2)`
+- **Each preset (`EnvironmentPreset`) controls:** skybox (Cubemap), fog low/high altitude colours, fog density, rain intensity, PP temperature, PP colour filter, vignette intensity/colour. Plus a `keepLastFog` bool to freeze fog for that state.
+- **Skybox blending:** uses `Assets/SkyboxBlend.shader` — a custom two-cubemap blend shader. Smooth crossfade at `weatherBlendSpeed`, no instant cuts.
+- **Rain integration:** assign `RainPrefab` instance to `rainScript` slot. `rainIntensity` per preset drives `RainScript.RainIntensity` automatically. Rain preset = 0.5, Thunderstorm = 1.0.
+- **Post Processing Stack v2** required (install via Package Manager → Unity Registry). Effects auto-added at runtime if not on the profile.
+- Called by `HawkController` via `SetHawkZone(0/1/2)`.
+
+### `SunController.cs`
+Separate script for the directional light (sun). Attach to the sun GameObject; assign `EnvironmentController` reference.
+- Reads `currentWeather`, `currentTimeOfDay`, `timeOfDayWeight` from `EnvironmentController` — does not modify it.
+- **`SunTimePreset`** per time of day: rotation (euler X=elevation, Y=azimuth), intensity, colour, shadowStrength.
+- **`SunWeatherModifier`** per weather: intensityMultiplier, colorTint, shadowStrengthMultiplier — multiplied on top of the time-of-day preset.
+- At `timeOfDayWeight = 0` the sun stays at neutral day position. At 1 it fully follows the time-of-day preset.
+- Uses `Quaternion.Slerp` for rotation (no gimbal issues).
+- All values smoothed at `blendSpeed` (match to `EnvironmentController.weatherBlendSpeed`).
+
+### `SkyboxBlend.shader`
+Custom shader at `Assets/SkyboxBlend.shader`. Takes `_CubemapA`, `_CubemapB`, `_Blend` (0–1), `_Exposure`, `_Rotation`. Used internally by `EnvironmentController` — do not assign manually.
+
 ### Planned / In Progress
-- **TimeOfDaySystem.cs** — day/night/dawn/dusk cycle driving ambient light, fog, skybox blend
-- **WeatherSystem.cs** — Rain, Thunderstorm, Wind, Fog, Hot, Cold states
-- **EnvironmentBlender.cs** — reads from TimeOfDay + Weather, writes to RenderSettings and Post Processing Volume once per frame to avoid conflicts
-- **Bird of Prey Zones** — zone trigger system (details missing from context — needs re-documenting)
+- **Bird of Prey Zones** — zone trigger system that changes hawk zone state on EnvironmentController (details missing from context — needs re-documenting)
 
 ### Render Pipeline
 Project uses the **Built-in Render Pipeline** (confirmed via Graphics settings: Default Render Pipeline = None).
 Post-processing uses **Post Processing Stack v2** (install via Window → Package Manager → Unity Registry → "Post Processing").
 - `Post Process Layer` component goes on the Main Camera.
-- `Post Process Volume` (Is Global = true) holds the actual effects (Color Grading, Bloom, etc.).
-- Hot weather: Color Grading Temperature → positive (warm orange).
-- Cold weather: Color Grading Temperature → negative (cool blue).
+- `Post Process Volume` (Is Global = true) holds the actual effects. EnvironmentController auto-adds ColorGrading and Vignette at runtime.
+- `FogHeightColor.cs` still exists in the project (kept for reference/values) but is superseded by `EnvironmentController`.
+
+### Assets in Project
+- `Assets/RainMaker/` — Rain Maker 2D/3D asset (Digital Ruby). Key prefab: `RainPrefab.prefab`. Key script: `RainScript.cs` with `RainIntensity` (0–1) field.
+- `Assets/Fantasy Skybox FREE/` — skybox materials and cubemaps. Panoramic `.mat` files need converting to Cubemaps to use with `SkyboxBlend.shader`.
 
 ---
 
