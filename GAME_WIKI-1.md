@@ -413,6 +413,16 @@ Post-processing uses **Post Processing Stack v2** (install via Window → Packag
 - **SunController.cs** created — separate script on the directional light. Reads EnvironmentController state, controls intensity, colour, shadow strength, rotation. Uses `SunTimePreset` + `SunWeatherModifier` structs.
 - `HawkController.cs` updated: `FogHeightColor fogController` → `EnvironmentController envController`.
 
+### Session 6 — Bird Stats UI
+- **BirdStatsData.cs** (ScriptableObject) created — holds body part data (name, dot position, sub-stats with 1-5 values). Pre-populated with 8 parts: Beak, Eyes, Wings, Feathers, Tail, Claws, Intelligence, Voice.
+- **BirdStatsUI.cs** created — full canvas-based stats panel, built procedurally in Start(), no prefabs needed.
+  - N key toggle (game does not pause)
+  - Bird portrait fills left 55% of screen; dots placed at normalised (dotX, dotY) coords via anchor positioning
+  - Each dot has a short label showing part name + averaged unicode star rating
+  - Hover: gold dot/label. Click: cyan selection + detail panel opens on right
+  - Detail panel: title, divider, description, vertical list of sub-stat rows with filled star Images (golden, count = value)
+  - Clicking selected dot again closes detail panel
+
 ### Sessions 2–4 — Flight, Physics & Core Systems
 - **Camera shake fix:** root cause was `rb.linearVelocity` and rotation being set in `Update()`, fighting `FixedUpdate()`. Fixed by storing desired values in Update and applying via `rb.MoveRotation` in FixedUpdate.
 - **CameraFollow:** switched to `Vector3.SmoothDamp` on full bird position to filter jitter.
