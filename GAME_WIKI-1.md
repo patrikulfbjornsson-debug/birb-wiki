@@ -5,7 +5,7 @@
 > **Status:** Early Development  
 > **Engine:** Unity (C#)  
 > **Genre:** Survival / Base Building / Flock Management  
-> **Last Updated:** 2026-05-06
+> **Last Updated:** 2026-05-08
 
 ---
 
