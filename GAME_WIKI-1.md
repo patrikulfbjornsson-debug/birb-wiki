@@ -269,6 +269,86 @@ Multiplayer is planned as a **late-stage feature**. Co-op players share the same
 
 ---
 
+## Current Scripts Reference
+
+All scripts live in `G:\UNITY\Birb\Assets\` unless noted.
+
+### `BirdFlight.cs`
+Core flight controller. Handles thrust, lift, banking, landing, ground movement, and catch mode toggle.
+- **Key public fields:** `maxFlightSpeed`, `catchModeActive` (bool property), `CurrentSpeed` (float property)
+- **E key:** toggles `catchModeActive` on/off. Auto-disables when inventory is full or Q is pressed.
+- **Q key:** drops the latest held item, turns off catch mode.
+- Ground movement and rotation are stored in `Update()` and applied in `FixedUpdate()` via `rb.MoveRotation` to prevent physics jitter.
+- `OnCollisionEnter` ignores FoodItem collisions to prevent Q-drop nosedive.
+
+### `BirdInventory.cs`
+Manages the bird's carried food items (beak inventory).
+- **`maxCapacity`:** max items the bird can carry (default 3).
+- **`TryCollectNearby()`:** called every frame when catch mode is active. Uses `Physics.OverlapSphere` with `QueryTriggerInteraction.Collide` to find FoodItems.
+- **`DropLatest()`:** drops the most recently picked up item; uses `Physics.IgnoreCollision` to prevent the dropped item from bumping the bird.
+- **`Count`:** current number of carried items (used by HUD).
+
+### `FoodItem.cs`
+Attach to any collectible item prefab.
+- **`foodName`** (string): display name shown in HomeBase inventory UI.
+- **`foodType`** (enum: Berry, Nut, GroundInsect, FlyingInsect).
+- **`buff`** (FoodBuff): optional stat buff applied when eaten.
+- **`Collect()`**: disables InsectBehavior if present, hides GO, calls `inventory.AddFood()`.
+- **`Drop()`**: re-enables GO. If insect, switches trigger collider to solid and adds a Rigidbody so it falls as a dead physics object.
+
+### `InsectBehavior.cs`
+AI for flying insects (e.g. dragonfly). State machine: Hovering → ReactingToThreat → Darting.
+- Auto-adds a `SphereCollider` (trigger) in `Awake()` — do **not** manually add a collider or Rigidbody to the prefab.
+- **Flee:** detects bird within `fleeDetectionRadius`, picks a dart direction away from bird blended with home bias.
+- **Idle darting:** random darts within `maxWanderRadius` of spawn point when undisturbed.
+- **Respawn:** `OnCaught()` disables renderers/colliders and respawns after `respawnDelay` seconds.
+- **`groundMask`:** if set to 0/Nothing, skips terrain raycast and clamps Y to spawn height (safe default for floating insects).
+
+### `CameraFollow.cs`
+Third-person orbit camera. Attach to a camera GameObject; assign the bird transform.
+- Uses `Vector3.SmoothDamp` on the full bird position (not just Y) to filter physics jitter before computing the look target.
+- RMB hold: free orbit. Without RMB: auto-follows behind the bird.
+
+### `WorldSpawner.cs`
+Spawns items on terrain at scene start. Raycasts down to find ground, enforces minimum spacing.
+- **`SpawnEntry`** fields: `prefab`, `minCount`, `maxCount`, `spawnInClusters`, `minClusterSize`, `maxClusterSize`, `clusterRadius`.
+- Cluster mode: picks a cluster centre first, then spreads items within `clusterRadius` of it.
+- Right-click component → **"Spawn Now"** or **"Clear Spawned Items"** to test in editor.
+- To spawn insects at height: set `raycastHeight` high and position the spawner object above the terrain; insects use `groundMask = Nothing` so they hover at their spawn Y.
+
+### `HomeBase.cs`
+Attach to the nest GameObject.
+- **`depositRadius`:** any active FoodItem inside this radius is auto-collected into `homeInventory` (Dictionary<string,int>) and destroyed each frame.
+- **`uiShowRadius`:** inventory panel (right side of screen) shows only when the bird is within this distance. Also used by HUD to hide the home marker when inside the zone.
+- Gold gizmo = deposit radius. White gizmo = UI show radius.
+
+### `HUD.cs`
+Builds the HUD Canvas at runtime — no prefab needed. Attach to any GameObject; assign references in inspector.
+- **References needed:** `BirdFlight`, `BirdInventory`, `HomeBase`.
+- **Bottom-centre panels (stacked):**
+  - Catch mode pill (E key on/off indicator, green when active)
+  - Carry counter (e.g. "Carrying 1 / 3")
+  - Speed bar (fill image + m/s readout, works on ground and in flight)
+- **Home marker:** world-to-screen projection. Shows a "HOME" label over the nest position when it is directly visible in the viewport. Hides when behind the camera, outside screen padding, or when the bird is inside `homeBase.uiShowRadius`.
+
+---
+
+### Planned / In Progress
+- **TimeOfDaySystem.cs** — day/night/dawn/dusk cycle driving ambient light, fog, skybox blend
+- **WeatherSystem.cs** — Rain, Thunderstorm, Wind, Fog, Hot, Cold states
+- **EnvironmentBlender.cs** — reads from TimeOfDay + Weather, writes to RenderSettings and Post Processing Volume once per frame to avoid conflicts
+- **Bird of Prey Zones** — zone trigger system (details missing from context — needs re-documenting)
+
+### Render Pipeline
+Project uses the **Built-in Render Pipeline** (confirmed via Graphics settings: Default Render Pipeline = None).
+Post-processing uses **Post Processing Stack v2** (install via Window → Package Manager → Unity Registry → "Post Processing").
+- `Post Process Layer` component goes on the Main Camera.
+- `Post Process Volume` (Is Global = true) holds the actual effects (Color Grading, Bloom, etc.).
+- Hot weather: Color Grading Temperature → positive (warm orange).
+- Cold weather: Color Grading Temperature → negative (cool blue).
+
+---
+
 ## Session Log
 
 ### Session 1 — Initial Design
@@ -277,3 +357,15 @@ Multiplayer is planned as a **late-stage feature**. Co-op players share the same
 - Wrote `BirdFlight.cs` — first flight controller script
 - Designed full trait system: physical traits, behavioural traits, special/rare traits
 - Defined core gameplay loop and progression layers
+
+### Sessions 2–4 — Flight, Physics & Core Systems
+- **Camera shake fix:** root cause was `rb.linearVelocity` and rotation being set in `Update()`, fighting `FixedUpdate()`. Fixed by storing desired values in Update and applying via `rb.MoveRotation` in FixedUpdate.
+- **CameraFollow:** switched to `Vector3.SmoothDamp` on full bird position to filter jitter.
+- **E key:** changed from 3-second buffer to on/off toggle (`catchModeActive`). Turns off on Q or full inventory.
+- **Q key nosedive fix:** food item spawning at bird position on drop triggered collision stagger. Fixed with `Physics.IgnoreCollision` between bird collider and dropped item colliders.
+- **Dragonfly / InsectBehavior:** full insect AI with flee, idle darting, home bias, respawn. Collider auto-added in Awake — do not manually add collider/Rigidbody to prefab.
+- **WorldSpawner:** added cluster spawn mode to `SpawnEntry`.
+- **HUD:** built at runtime (no prefab). Catch mode pill, carry counter, speed bar, home marker.
+- **HomeBase:** auto-collects dropped food in deposit radius, shows inventory when bird is nearby.
+- **Day/Night + Weather architecture discussed:** TimeOfDaySystem + WeatherSystem → EnvironmentBlender pattern agreed.
+- **Render pipeline identified:** Built-in. Post Processing Stack v2 to be used for colour grading.
