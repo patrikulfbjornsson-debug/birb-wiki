@@ -384,6 +384,17 @@ Post-processing uses **Post Processing Stack v2** (install via Window → Packag
 - Designed full trait system: physical traits, behavioural traits, special/rare traits
 - Defined core gameplay loop and progression layers
 
+### Session 5 — Environment System
+- **EnvironmentController.cs** created — replaces FogHeightColor.cs as the single writer to RenderSettings + PostProcess.
+- Weather states: Clear, Rain, Thunderstorm, Foggy, Hot, Cold, Wind.
+- Time of day states: Day, Evening, Night, Morning. Blended into weather via `timeOfDayWeight` slider.
+- Hawk zone states (Zone1/Zone2) driven by HawkController via `SetHawkZone()`, blended on top at highest priority.
+- Each `EnvironmentPreset` has: skybox cubemap, low/high altitude fog colours, fog density, rain intensity, PP temperature, PP colour filter, vignette intensity/colour, `keepLastFog` bool.
+- **SkyboxBlend.shader** created for smooth cubemap crossfading.
+- **Rain Maker** asset imported and wired in — `rainIntensity` per preset drives particle system automatically.
+- **SunController.cs** created — separate script on the directional light. Reads EnvironmentController state, controls intensity, colour, shadow strength, rotation. Uses `SunTimePreset` + `SunWeatherModifier` structs.
+- `HawkController.cs` updated: `FogHeightColor fogController` → `EnvironmentController envController`.
+
 ### Sessions 2–4 — Flight, Physics & Core Systems
 - **Camera shake fix:** root cause was `rb.linearVelocity` and rotation being set in `Update()`, fighting `FixedUpdate()`. Fixed by storing desired values in Update and applying via `rb.MoveRotation` in FixedUpdate.
 - **CameraFollow:** switched to `Vector3.SmoothDamp` on full bird position to filter jitter.
