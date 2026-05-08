@@ -359,6 +359,24 @@ Separate script for the directional light (sun). Attach to the sun GameObject; a
 ### `SkyboxBlend.shader`
 Custom shader at `Assets/SkyboxBlend.shader`. Takes `_CubemapA`, `_CubemapB`, `_Blend` (0–1), `_Exposure`, `_Rotation`. Used internally by `EnvironmentController` — do not assign manually.
 
+### `BirdStatsData.cs`
+ScriptableObject holding all bird body part stats and dot positions. Create via right-click → Create → Birb → Bird Stats Data.
+- **`SubStatData`:** `statName` (string) + `value` (int 1–5)
+- **`BodyPartData`:** `partName`, `dotX`/`dotY` (0–1 normalised portrait position), `labelOnLeft` (bool), `description` (TextArea), `subStats[]`
+- Pre-populated with 8 body parts: Beak, Eyes, Wings, Feathers, Tail, Claws, Intelligence, Voice
+
+### `BirdStatsUI.cs`
+Canvas-based bird stats panel. Attach to any persistent GameObject; assign `statsData`, `birdPortrait`, and `starSprite` in the inspector.
+- **N key** (configurable) toggles the panel. Game does NOT pause.
+- **Layout:** left 55% = bird portrait with interactive dot markers. Right 45% = expandable detail panel.
+- **Dots:** placed at `(dotX, dotY)` normalised coords over the portrait area using anchor-based positioning. Each dot shows a short label `"PartName ★★★"` beside it (side controlled by `labelOnLeft`). Dot uses a runtime-generated circle sprite.
+- **Hover:** dot + label colour shift to gold (`dotColorHover`).
+- **Click:** dot turns cyan (`dotColorSelected`). Right-side detail panel slides open showing: part name header, divider line, description text, then a `VerticalLayoutGroup` of sub-stat rows.
+- **Sub-stat rows:** each row = stat name label + N filled star images (count = `value`), gold tinted. No empty stars.
+- **Click same dot again:** deselects, closes detail panel.
+- **No prefabs needed** — entire UI built procedurally in `Start()`.
+- **Inspector colours:** `dotColorDefault/Hover/Selected` and `labelColorDefault/Hover/Selected` all editable.
+
 ### Planned / In Progress
 - **Bird of Prey Zones** — zone trigger system that changes hawk zone state on EnvironmentController (details missing from context — needs re-documenting)
 
