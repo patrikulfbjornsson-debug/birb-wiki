@@ -415,12 +415,13 @@ Post-processing uses **Post Processing Stack v2** (install via Window → Packag
 ### Session 6 — Bird Stats UI
 - **BirdStatsData.cs** (ScriptableObject) created — holds body part data (name, dot position, sub-stats with 1-5 values). Pre-populated with 8 parts: Beak, Eyes, Wings, Feathers, Tail, Claws, Intelligence, Voice.
 - **BirdStatsUI.cs** created — full canvas-based stats panel, built procedurally in Start(), no prefabs needed.
-  - N key toggle (game does not pause)
-  - Bird portrait fills left 55% of screen; dots placed at normalised (dotX, dotY) coords via anchor positioning
-  - Each dot has a short label showing part name + averaged unicode star rating
-  - Hover: gold dot/label. Click: cyan selection + detail panel opens on right
-  - Detail panel: title, divider, description, vertical list of sub-stat rows with filled star Images (golden, count = value)
-  - Clicking selected dot again closes detail panel
+  - N key toggle (game does not pause). Portrait on right 55%, detail panel on left.
+  - Dots placed at normalised (dotX, dotY) via anchor positioning. Label background boxes with configurable colour/padding.
+  - Hover: gold. Click: cyan + detail panel. Click again: close.
+  - Detail panel: title, divider, description, stat rows with background boxes and gold star images.
+  - **Key lesson:** EventTrigger/UI EventSystem unusable when cursor is locked — `Input.mousePosition` is stuck at screen centre. Replaced with `RectTransformUtility.RectangleContainsScreenPoint` manual hit-testing in Update(). Cursor force-unlocked every frame while panel is open.
+  - **Key lesson:** `LayoutElement.minWidth` ignored when parent HLG has `childControlWidth = false`. Use `HorizontalLayoutGroup.spacing` for gaps instead.
+  - **Key lesson:** Unity serializes component fields on first add — code default changes don't update existing instances. Fixed with live-update lists written every frame in Update().
 
 ### Sessions 2–4 — Flight, Physics & Core Systems
 - **Camera shake fix:** root cause was `rb.linearVelocity` and rotation being set in `Update()`, fighting `FixedUpdate()`. Fixed by storing desired values in Update and applying via `rb.MoveRotation` in FixedUpdate.
