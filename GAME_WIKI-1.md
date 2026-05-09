@@ -423,6 +423,19 @@ Post-processing uses **Post Processing Stack v2** (install via Window → Packag
   - **Key lesson:** `LayoutElement.minWidth` ignored when parent HLG has `childControlWidth = false`. Use `HorizontalLayoutGroup.spacing` for gaps instead.
   - **Key lesson:** Unity serializes component fields on first add — code default changes don't update existing instances. Fixed with live-update lists written every frame in Update().
 
+### Session 7 — Bird Stats UI polish & live inspector editing
+- All major UI parameters now live-editable in play mode via stored reference lists updated every frame:
+  - Dot position (`dotX`/`dotY`) — moves circles instantly
+  - `labelOnLeft` — flips label side, pivot, offset, and text alignment instantly
+  - Dot size — resizes circle and shifts label offset accordingly
+  - Portrait label font size (`portraitLabelFontSize`) and detail panel font size (`statRowFontSize`)
+  - Label background colour, pad X/Y
+  - Stat row background colour, pad X/Y, star size, star gap
+- **Star size fix:** `LayoutRebuilder.MarkLayoutForRebuild` added so HLG reflows after sizeDelta changes each frame
+- **Star gap fix (root cause):** `LayoutElement.minWidth` is silently ignored when `childControlWidth = false`. Switched to `HorizontalLayoutGroup.spacing`
+- **Cursor lock fix (root cause):** Unity's EventSystem raycasts from `Input.mousePosition` which is always screen-centre when cursor is locked. Replaced all EventTrigger code with `RectTransformUtility.RectangleContainsScreenPoint` manual hit-testing + `Input.GetMouseButtonDown(0)` in Update. Cursor force-unlocked to `CursorLockMode.None` every frame while panel is open.
+- **Serialization fix pattern:** renaming a field causes Unity to re-serialize it with the new code default, fixing stale zeroed values from before the field existed.
+
 ### Sessions 2–4 — Flight, Physics & Core Systems
 - **Camera shake fix:** root cause was `rb.linearVelocity` and rotation being set in `Update()`, fighting `FixedUpdate()`. Fixed by storing desired values in Update and applying via `rb.MoveRotation` in FixedUpdate.
 - **CameraFollow:** switched to `Vector3.SmoothDamp` on full bird position to filter jitter.
