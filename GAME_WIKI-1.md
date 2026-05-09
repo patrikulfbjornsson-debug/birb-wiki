@@ -368,14 +368,13 @@ ScriptableObject holding all bird body part stats and dot positions. Create via 
 ### `BirdStatsUI.cs`
 Canvas-based bird stats panel. Attach to any persistent GameObject; assign `statsData`, `birdPortrait`, and `starSprite` in the inspector.
 - **N key** (configurable) toggles the panel. Game does NOT pause.
-- **Layout:** left 55% = bird portrait with interactive dot markers. Right 45% = expandable detail panel.
-- **Dots:** placed at `(dotX, dotY)` normalised coords over the portrait area using anchor-based positioning. Each dot shows a short label `"PartName ★★★"` beside it (side controlled by `labelOnLeft`). Dot uses a runtime-generated circle sprite.
-- **Hover:** dot + label colour shift to gold (`dotColorHover`).
-- **Click:** dot turns cyan (`dotColorSelected`). Right-side detail panel slides open showing: part name header, divider line, description text, then a `VerticalLayoutGroup` of sub-stat rows.
-- **Sub-stat rows:** each row = stat name label + N filled star images (count = `value`), gold tinted. No empty stars.
-- **Click same dot again:** deselects, closes detail panel.
-- **No prefabs needed** — entire UI built procedurally in `Start()`.
-- **Inspector colours:** `dotColorDefault/Hover/Selected` and `labelColorDefault/Hover/Selected` all editable.
+- **Layout:** portrait fills right 55% of screen; detail panel opens on the left when a dot is clicked.
+- **Dots:** placed at `(dotX, dotY)` normalised coords using anchor-based positioning. Each dot shows a label `"PartName ★★★"` with a configurable background box. Dot is a runtime-generated circle sprite.
+- **Input — CRITICAL:** Uses `RectTransformUtility.RectangleContainsScreenPoint` in `Update()` for manual hit-testing. Does NOT use EventTrigger or the UI EventSystem for dots. This is required because Unity's EventSystem uses `Input.mousePosition` which is stuck at screen centre when the cursor is locked — manual hit-testing reads the real mouse coordinates regardless of lock state. Cursor is force-unlocked every frame while the panel is open.
+- **Hover:** dot + label colour shift to gold. **Click:** turns cyan, detail panel opens. **Click same dot again:** closes detail panel.
+- **Detail panel:** part name header, divider, description text, `VerticalLayoutGroup` of sub-stat rows. Each row = background box + stat name label + N gold star images. Star gap uses `HorizontalLayoutGroup.spacing` (NOT `LayoutElement` — ignored when `childControlWidth = false`).
+- **Live inspector tweaks:** label bg colour/padding, stat row bg colour/padding, star size/gap all update every frame via stored references. Changing values in play mode takes effect immediately.
+- **No prefabs needed** — entire UI built procedurally in `Start()`. Changing inspector values before pressing Play sets the initial appearance.
 
 ### Planned / In Progress
 - **Bird of Prey Zones** — zone trigger system that changes hawk zone state on EnvironmentController (details missing from context — needs re-documenting)
